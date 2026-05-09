@@ -1,10 +1,10 @@
 version: '3.8'
 
 x-spark-common: &spark-common
-  image: bitnami/spark:latest
+  image: spark:latest
   volumes:
-    - ../data:/opt/bitnami/spark/data
-    - ../src/streaming:/opt/bitnami/spark/scripts
+    - ../data:/opt/spark/work-dir/data
+    - ../src/streaming:/opt/spark/work-dir/scripts
   networks:
     - bigdata-net
 
@@ -51,8 +51,7 @@ services:
   spark-master:
     <<: *spark-common
     container_name: spark-master
-    environment:
-      SPARK_MODE: master
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
     ports:
       - "8080:8080"
       - "7077:7077"
@@ -60,11 +59,7 @@ services:
   spark-worker:
     <<: *spark-common
     container_name: spark-worker
-    environment:
-      SPARK_MODE: worker
-      SPARK_MASTER_URL: spark://spark-master:7077
-      SPARK_WORKER_MEMORY: 2G
-      SPARK_WORKER_CORES: 1
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
     depends_on:
       - spark-master
 
