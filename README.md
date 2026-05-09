@@ -1,17 +1,12 @@
 # E-Commerce Clickstream & Inventory Watch Pipeline
 
-![Apache Kafka](https://img.shields.io/badge/Apache%20Kafka-000?style=for-the-badge&logo=apachekafka)
-![Apache Spark](https://img.shields.io/badge/Apache%20Spark-E25A1C?style=for-the-badge&logo=apachespark&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white)
-![Apache Airflow](https://img.shields.io/badge/Apache%20Airflow-017CEE?style=for-the-badge&logo=Apache%20Airflow&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white)
-![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+
 
 An end-to-end Big Data pipeline implementing a Kappa-style architecture to ingest, process, and analyze real-time e-commerce user events. Developed as part of the Applied Big Data Engineering Mini Project Assessment (Scenario 3).
 
 ---
 
-## 🎯 Project Objective
+## Project Objective
 The objective of this project is to simulate an e-commerce platform tracking user activity to monitor stock interest dynamically. The pipeline handles:
 - **High-throughput Ingestion**: Streaming simulated clickstream events into Kafka.
 - **Real-Time Stream Processing**: Using Spark to monitor products experiencing High Interest but Low Conversion (Views > 100, Purchases < 5) within a 10-minute sliding window, immediately logging Flash Sale alerts.
@@ -19,7 +14,7 @@ The objective of this project is to simulate an e-commerce platform tracking use
 
 ---
 
-## 🏗️ Architecture & Technologies
+## Architecture & Technologies
 - **Ingestion**: Apache Kafka
 - **Stream Processing**: Apache Spark Structured Streaming
 - **Storage Sink / Data Warehouse**: PostgreSQL
@@ -30,7 +25,7 @@ The objective of this project is to simulate an e-commerce platform tracking use
 
 ---
 
-## 📂 Repository Structure
+## Repository Structure
 Following standard data engineering principles, the codebase is modularly structured:
 
 ```text
@@ -58,7 +53,7 @@ Following standard data engineering principles, the codebase is modularly struct
 
 ---
 
-## ⚙️ Setup & Installation
+## Setup & Installation
 
 ### Prerequisites
 - [Docker](https://docs.docker.com/get-docker/) and Docker Compose installed.
@@ -79,7 +74,7 @@ Following standard data engineering principles, the codebase is modularly struct
 
 ---
 
-## 🚀 Execution Guide
+## Execution Guide
 
 ### 1. Start the Data Generator
 Run the mock producer to begin simulating user website traffic in real-time. This script pumps JSON payloads directly into the `ecommerce-events` Kafka topic.
