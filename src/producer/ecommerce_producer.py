@@ -45,7 +45,8 @@ def create_producer(retries: int = 10, delay: int = 5):
         try:
             producer = KafkaProducer(
                 bootstrap_servers=broker,
-                value_serializer=lambda m: json.dumps(m).encode('utf-8')
+                value_serializer=lambda m: json.dumps(m).encode('utf-8'),
+                api_version=(2, 5, 0)
             )
             print(f"Connected to Kafka broker at {broker}", flush=True)
             return producer
