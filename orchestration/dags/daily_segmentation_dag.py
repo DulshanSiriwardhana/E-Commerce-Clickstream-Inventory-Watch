@@ -20,7 +20,6 @@ def analyze(**context):
     conn = psycopg2.connect(**db_config)
     cur  = conn.cursor()
 
-    # ── User segmentation ─────────────────────────────────────────────────────
     cur.execute("""
         WITH user_purchases AS (
             SELECT user_id,
@@ -34,7 +33,6 @@ def analyze(**context):
     """)
     segs = cur.fetchall()
 
-    # ── Top-5 products by views ───────────────────────────────────────────────
     cur.execute("""
         SELECT product_id, COUNT(*) AS views
         FROM raw_events
@@ -45,7 +43,6 @@ def analyze(**context):
     """)
     tops = cur.fetchall()
 
-    # ── Conversion rates by category ─────────────────────────────────────────
     cur.execute("""
         SELECT
             CASE
@@ -64,7 +61,6 @@ def analyze(**context):
     cur.close()
     conn.close()
 
-    # ── Write reports ─────────────────────────────────────────────────────────
     os.makedirs(REPORTS_DIR, exist_ok=True)
     ts = pendulum.now("UTC").strftime("%Y%m%d_%H%M%S")
 
