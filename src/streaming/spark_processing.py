@@ -7,7 +7,7 @@ from pyspark.sql.types import StructType, StructField, StringType
 
 load_dotenv()
 
-SPARK_VERSION = "3.4.0"
+SPARK_VERSION = "3.5.0"
 
 kafka_broker = os.environ.get("KAFKA_BROKER", "kafka:29092")
 kafka_topic = os.environ.get("KAFKA_TOPIC", "ecommerce-events")

@@ -1,6 +1,6 @@
 
 x-spark-common: &spark-common
-  image: bitnami/spark:3.5.0
+  image: apache/spark:3.5.0
   volumes:
     - ../data:/opt/spark/work-dir/data
     - ../src/streaming:/opt/spark/work-dir/scripts
@@ -78,9 +78,9 @@ services:
   spark-master:
     <<: *spark-common
     container_name: spark-master
-    command: /opt/bitnami/spark/bin/spark-class org.apache.spark.deploy.master.Master
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
     environment:
-      - SPARK_MODE=master
+      - SPARK_NO_DAEMONIZE=true
     ports:
       - "8080:8080"
       - "7077:7077"
@@ -88,10 +88,9 @@ services:
   spark-worker:
     <<: *spark-common
     container_name: spark-worker
-    command: /opt/bitnami/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
     environment:
-      - SPARK_MODE=worker
-      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_NO_DAEMONIZE=true
     depends_on:
       - spark-master
 
