@@ -1,7 +1,6 @@
-version: '3.8'
 
 x-spark-common: &spark-common
-  image: bitnami/spark:3.4
+  image: bitnami/spark:3.5.0
   volumes:
     - ../data:/opt/spark/work-dir/data
     - ../src/streaming:/opt/spark/work-dir/scripts
