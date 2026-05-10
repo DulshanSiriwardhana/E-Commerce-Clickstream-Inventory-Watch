@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS alerts (
 
 CREATE TABLE IF NOT EXISTS raw_events (
     id SERIAL PRIMARY KEY,
+    event_id VARCHAR(50),
     user_id VARCHAR(50),
     product_id VARCHAR(50),
     event_type VARCHAR(20),

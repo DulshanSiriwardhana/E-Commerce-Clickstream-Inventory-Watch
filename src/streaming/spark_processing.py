@@ -1,11 +1,8 @@
 import os
-from dotenv import load_dotenv
 
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, from_json, window, expr, current_timestamp, to_timestamp
 from pyspark.sql.types import StructType, StructField, StringType
-
-load_dotenv()
 
 SPARK_VERSION = "3.5.0"
 
@@ -71,7 +68,7 @@ win_df = parsed \
     )
 
 def process_batch(df, epoch_id):
-    alerts = df.filter((col("views") > 100) & (col("purchases") < 5)) \
+    alerts = df.filter((col("views") > 10) & (col("purchases") < 5)) \
                .withColumn("message", expr("concat('Flash Sale idea for ', product_id)"))
 
     if not alerts.isEmpty():
