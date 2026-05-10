@@ -1,12 +1,30 @@
 version: '3.8'
 
 x-spark-common: &spark-common
-  image: spark:latest
+  image: bitnami/spark:3.4
   volumes:
     - ../data:/opt/spark/work-dir/data
     - ../src/streaming:/opt/spark/work-dir/scripts
   networks:
     - bigdata-net
+
+x-airflow-common: &airflow-common
+  image: apache/airflow:2.7.1
+  env_file:
+    - ../.env
+  environment:
+    - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+    - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+    - AIRFLOW__CORE__LOAD_EXAMPLES=False
+    - AIRFLOW__CORE__FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLt0nIe3aY=
+  volumes:
+    - ../orchestration/dags:/opt/airflow/dags
+    - ../output:/opt/airflow/reports
+  networks:
+    - bigdata-net
+  depends_on:
+    postgres:
+      condition: service_healthy
 
 services:
   zookeeper:
@@ -34,6 +52,11 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     networks:
       - bigdata-net
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
 
   postgres:
     image: postgres:15
@@ -47,11 +70,18 @@ services:
       - ./database/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
     networks:
       - bigdata-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   spark-master:
     <<: *spark-common
     container_name: spark-master
-    command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
+    command: /opt/bitnami/spark/bin/spark-class org.apache.spark.deploy.master.Master
+    environment:
+      - SPARK_MODE=master
     ports:
       - "8080:8080"
       - "7077:7077"
@@ -59,66 +89,54 @@ services:
   spark-worker:
     <<: *spark-common
     container_name: spark-worker
-    command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+    command: /opt/bitnami/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
     depends_on:
       - spark-master
 
-  airflow-webserver:
-    image: apache/airflow:2.7.1
-    container_name: airflow-webserver
-    restart: always
-    depends_on:
-      - postgres
-    env_file:
-      - ../.env
-    environment:
-      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
-      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-      - AIRFLOW__CORE__LOAD_EXAMPLES=False
-    volumes:
-      - ../orchestration/dags:/opt/airflow/dags
-      - ../output:/opt/airflow/reports
-    ports:
-      - "8081:8080"
-    command: webserver
-    networks:
-      - bigdata-net
-
-  airflow-scheduler:
-    image: apache/airflow:2.7.1
-    container_name: airflow-scheduler
-    depends_on:
-      - airflow-webserver
-    env_file:
-      - ../.env
-    environment:
-      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
-      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-      - AIRFLOW__CORE__LOAD_EXAMPLES=False
-    volumes:
-      - ../orchestration/dags:/opt/airflow/dags
-      - ../output:/opt/airflow/reports
-    command: scheduler
-    networks:
-      - bigdata-net
-
   airflow-init:
-    image: apache/airflow:2.7.1
+    <<: *airflow-common
     container_name: airflow-init
-    depends_on:
-      - postgres
-    env_file:
-      - ../.env
     environment:
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-      - _AIRFLOW_DB_UPGRADE=true
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - AIRFLOW__CORE__FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLt0nIe3aY=
+      - _AIRFLOW_DB_MIGRATE=true
       - _AIRFLOW_WWW_USER_CREATE=true
       - _AIRFLOW_WWW_USER_USERNAME=admin
       - _AIRFLOW_WWW_USER_PASSWORD=admin
+      - _AIRFLOW_WWW_USER_EMAIL=admin@example.com
+      - _AIRFLOW_WWW_USER_FIRSTNAME=Admin
+      - _AIRFLOW_WWW_USER_LASTNAME=User
+      - _AIRFLOW_WWW_USER_ROLE=Admin
     command: version
-    networks:
-      - bigdata-net
+
+  airflow-webserver:
+    <<: *airflow-common
+    container_name: airflow-webserver
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+    ports:
+      - "8081:8080"
+    command: webserver
+
+  airflow-scheduler:
+    <<: *airflow-common
+    container_name: airflow-scheduler
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+    command: scheduler
 
 networks:
   bigdata-net:

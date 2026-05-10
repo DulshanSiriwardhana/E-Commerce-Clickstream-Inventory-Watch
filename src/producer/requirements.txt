@@ -1,0 +1,3 @@
+# Producer dependencies (run locally or in a dedicated container)
+kafka-python==2.0.2
+python-dotenv==1.0.1
