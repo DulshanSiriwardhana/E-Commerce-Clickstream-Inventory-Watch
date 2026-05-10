@@ -47,20 +47,20 @@ def create_producer(retries: int = 10, delay: int = 5):
                 bootstrap_servers=broker,
                 value_serializer=lambda m: json.dumps(m).encode('utf-8')
             )
-            print(f"Connected to Kafka broker at {broker}")
+            print(f"Connected to Kafka broker at {broker}", flush=True)
             return producer
         except NoBrokersAvailable:
-            print(f"Broker not available (attempt {attempt}/{retries}), retrying in {delay}s …")
+            print(f"Broker not available (attempt {attempt}/{retries}), retrying in {delay}s …", flush=True)
             time.sleep(delay)
 
     raise RuntimeError(f"Could not connect to Kafka broker at {broker} after {retries} attempts.")
 
 
 producer = create_producer()
-print(f"Streaming events to topic '{topic}' …")
+print(f"Streaming events to topic '{topic}' …", flush=True)
 
 while True:
     evt = generate()
     producer.send(topic, value=evt)
-    print(evt)
+    print(evt, flush=True)
     time.sleep(random.uniform(0.1, 0.5))

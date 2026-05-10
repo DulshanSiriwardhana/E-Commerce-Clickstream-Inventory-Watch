@@ -81,7 +81,7 @@ def analyze(**context):
             rate = p / v if v > 0 else 0
             f.write(f"{cat},{v},{p},{rate:.4f}\n")
 
-    print(f"Reports written to {REPORTS_DIR} with timestamp {ts}")
+    print(f"Reports written to {REPORTS_DIR} with timestamp {ts}", flush=True)
 
 
 default_args = {
@@ -94,7 +94,7 @@ default_args = {
 with DAG(
     dag_id="daily_user_segmentation",
     default_args=default_args,
-    schedule_interval=timedelta(days=1),
+    schedule_interval=timedelta(minutes=1),
     catchup=False,
     tags=["ecommerce", "segmentation"],
 ) as dag:

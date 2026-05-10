@@ -47,8 +47,10 @@ parsed = df.selectExpr("CAST(value AS STRING)") \
     .drop("timestamp")
 
 def write_raw(batch_df, epoch_id):
+    count = batch_df.count()
     batch_df.withColumn("inserted_at", current_timestamp()) \
         .write.jdbc(url=pg_url, table="raw_events", mode="append", properties=pg_props)
+    print(f"[Raw Batch {epoch_id}] Wrote {count} events to PostgreSQL", flush=True)
 
 raw_query = parsed \
     .writeStream \
@@ -81,6 +83,9 @@ def process_batch(df, epoch_id):
             col("message")
         ).write.jdbc(url=pg_url, table="alerts", mode="append", properties=pg_props)
         alerts.show(truncate=False)
+        print(f"[Batch {epoch_id}] Wrote {alerts.count()} alerts to PostgreSQL", flush=True)
+    else:
+        print(f"[Batch {epoch_id}] No alerts generated", flush=True)
 
 alerts_query = win_df.writeStream.outputMode("update").foreachBatch(process_batch).start()
 

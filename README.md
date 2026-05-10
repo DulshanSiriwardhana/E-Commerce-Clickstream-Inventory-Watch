@@ -80,13 +80,13 @@ Following standard data engineering principles, the codebase is modularly struct
 Run the mock producer to begin simulating user website traffic in real-time. This script pumps JSON payloads directly into the `ecommerce-events` Kafka topic.
 *(Keep this running in an active terminal window)*
 ```bash
-python src/producer/ecommerce_producer.py
+KAFKA BROKER=localhost:9092 python3 src/producer/ecommerce_producer.py
 ```
 
 ### 2. Begin Stream Processing
 Start the Apache Spark Structured Streaming job. The script will securely connect to Kafka, parse the stream, apply a 10-minute watermark/sliding window, and write identified real-time flash-sale alerts into PostgreSQL.
 ```bash
-python src/streaming/spark_processing.py
+python3 src/streaming/spark_processing.py
 ```
 
 ### 3. Orchestrate Batch Analytics
