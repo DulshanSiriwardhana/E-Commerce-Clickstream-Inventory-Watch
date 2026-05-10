@@ -9,8 +9,8 @@ An end-to-end Big Data pipeline implementing a Kappa-style architecture to inges
 ## Project Objective
 The objective of this project is to simulate an e-commerce platform tracking user activity to monitor stock interest dynamically. The pipeline handles:
 - **High-throughput Ingestion**: Streaming simulated clickstream events into Kafka.
-- **Real-Time Stream Processing**: Using Spark to monitor products experiencing High Interest but Low Conversion (Views > 100, Purchases < 5) within a 10-minute sliding window, immediately logging Flash Sale alerts.
-- **Batch Orchestration**: Using Airflow to execute a nightly job that segments users into "Window Shoppers" vs "Buyers" and generates analytical conversion reports.
+- **Real-Time Stream Processing**: Using Spark to monitor products experiencing High Interest but Low Conversion (Views > 10, Purchases < 5) within a 10-minute sliding window, immediately logging Flash Sale alerts.
+- **Batch Orchestration**: Using Airflow to execute a periodic job (every 1 minute) that segments users into "Window Shoppers" vs "Buyers" and generates analytical conversion reports.
 
 ---
 
@@ -58,7 +58,7 @@ Following standard data engineering principles, the codebase is modularly struct
 ### Prerequisites
 - [Docker](https://docs.docker.com/get-docker/) and Docker Compose installed.
 - Python 3.8 or higher.
-- Required python packages (found in `requirements.txt` or installable via PIP):
+- Required python packages (found in `src/producer/requirements.txt` or installable via PIP):
   ```bash
   pip install kafka-python pyspark psycopg2-binary python-dotenv
   ```
@@ -80,7 +80,7 @@ Following standard data engineering principles, the codebase is modularly struct
 Run the mock producer to begin simulating user website traffic in real-time. This script pumps JSON payloads directly into the `ecommerce-events` Kafka topic.
 *(Keep this running in an active terminal window)*
 ```bash
-KAFKA BROKER=localhost:9092 python3 src/producer/ecommerce_producer.py
+KAFKA_BROKER=localhost:9092 python3 src/producer/ecommerce_producer.py
 ```
 
 ### 2. Begin Stream Processing
